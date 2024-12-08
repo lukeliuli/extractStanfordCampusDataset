@@ -21,7 +21,7 @@ print("Read Line: %s" % (line))
 headers = ["TrackID", "xmin", "ymin", "xmax", "ymax","frame", "lost", "occluded", "generated","label"]
 df = pd.read_csv(file1, sep=' ',names=headers)
 print(df.head(5))
-df.to_csv('.\\stca_dataset.csv',index=False)
+df.to_csv('.\\stca_dataset_for_test.csv',index=False)
 '''
 ############################
 以track为关键点进行查看和统计
@@ -54,6 +54,8 @@ for i, id in enumerate(trackList):  # 枚举每一个track
 以frame(时间)为关键点进行查看和统计
 
 '''
+
+
 frameList = df.frame.unique()  # 获得每一条frame
 numFrame = len(frameList)
 
@@ -64,14 +66,18 @@ for i, frameid in enumerate(frameList):  # 枚举每一个frame
 
     for j, trackid in enumerate(trackList):  # 枚举每一个track
         df_track = df_frame[(df_frame["TrackID"]== trackid) & (df_frame["lost"]== 0) & (df_frame["generated"]== 0 )]
+        df_track = df_frame[(df_frame["TrackID"]== trackid) & (df_frame["lost"]== 0)& (df_frame["label"]== "Biker")]
         df_track = df_frame[(df_frame["TrackID"]== trackid) & (df_frame["lost"]== 0)]
-
         xcenter  = (df_track['xmin']+df_track["xmax"])/2
         ycenter  = (df_track['ymin']+df_track["ymax"])/2
+       
         xcenter = xcenter.to_numpy()
         ycenter = ycenter.to_numpy()
-        plt.plot(xcenter,ycenter,'.')
-    
+        #plt.plot(xcenter,ycenter,'.')
+
+        x = df_track['xmin'].to_numpy()
+        y = df_track['ymin'].to_numpy()
+        plt.plot(x,y,'.')
 
     title = "frameindex:%d,frameid:%d,trackNum:%d" %(i,frameid,numTrack)
     plt.plot(xcenter,ycenter,'o')
@@ -79,7 +85,7 @@ for i, frameid in enumerate(frameList):  # 枚举每一个frame
     plt.savefig(".\\saveFig\\test_frameIndex%4d.jpg" %i)
     #plt.show()
     
-    if i>120:
+    if i>30:
         break
     
     
@@ -90,3 +96,18 @@ for imagename in os.listdir('.\\saveFig'):
     frames.append(imageio.imread(fname))
 
 imageio.mimsave(".\\res.gif", frames, 'GIF', duration=2) 
+
+'''
+############################
+查看图像
+
+'''
+
+fname = '.\\test1\\test1_ref.jpg'
+ref = imageio.imread(fname)
+fname = '.\\test1\\test1_mask.png'
+mask = imageio.imread(fname)
+
+plt.imshow(ref)
+#plt.gca().invert_yaxis()
+plt.show()
