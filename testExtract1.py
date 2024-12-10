@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import imageio
 import os
+import math
 '''
 简单测试读写
 '''
@@ -129,6 +130,7 @@ plt.show()
 frameList = df.frame.unique()  # 获得每一条frame
 numFrame = len(frameList)
 sampleLen = 2*30 #帧率30,2秒的数据为60帧
+sampleAll = []
 for i, frameid in enumerate(frameList):  # 枚举每一个frame，数据库中frameid从9000开始，也就是从5分钟开始
 
     if i<sampleLen:
@@ -136,11 +138,29 @@ for i, frameid in enumerate(frameList):  # 枚举每一个frame，数据库中fr
     df_frame =df[df["frame"]== frameid]
     trackList =  df_frame.TrackID.unique()  # 获得每一条track
     numTrack = len(trackList)
+
     samples = []
     for j, trackid in enumerate(trackList):  # 枚举每一个track
+        samplesTmp1  = []
         for k in range(frameid - samplelen,frameid) #获得当前时刻前面2秒的数据
             df_pt =df[(df["frame"]== k) & (df["TrackID"]== j) ]
+            df_ptl =df[(df["frame"]== k-1) & (df["TrackID"]== j) ]
             
             
             x = df_pt['xmin'].to_numpy()
             y = df_pt['ymin'].to_numpy()
+            xl = df_ptl['xmin'].to_numpy()
+            yl = df_ptl['ymin'].to_numpy()
+            vx = x-xl
+            vy = y-xl
+            v = vx*vx+vy*vy
+            theta = math.atan(vy,vx)*180/pi
+
+            samplesTmp1.extend([x,y,v,theta])
+    
+        samples[trackid] = samplesTmp1 # 存当前时刻和前一时刻（2秒），当前轨迹的据
+    samplesAll[frameid] = samples[j]
+
+
+
+
