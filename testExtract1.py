@@ -22,8 +22,9 @@ headers = ["TrackID", "xmin", "ymin", "xmax", "ymax","frame", "lost", "occluded"
 df = pd.read_csv(file1, sep=' ',names=headers)
 print(df.head(5))
 df.to_csv('.\\stca_dataset_for_test.csv',index=False)
+
 '''
-############################
+#########################################################
 以track为关键点进行查看和统计
 '''
 trackList = df.TrackID.unique()  # 获得每一条track
@@ -50,7 +51,7 @@ for i, id in enumerate(trackList):  # 枚举每一个track
 
 
 '''
-############################
+#########################################################
 以frame(时间)为关键点进行查看和统计
 
 '''
@@ -98,7 +99,7 @@ for imagename in os.listdir('.\\saveFig'):
 imageio.mimsave(".\\res.gif", frames, 'GIF', duration=2) 
 
 '''
-############################
+#########################################################
 查看图像
 
 '''
@@ -111,3 +112,35 @@ mask = imageio.imread(fname)
 plt.imshow(ref)
 #plt.gca().invert_yaxis()
 plt.show()
+
+
+
+'''
+#########################################################
+提取特征，为2秒钟的数据
+特征包括:1 位置 2 速度 3 速度方向 4 路径编号
+聚类输出 ：属于各个团
+分类输出 ：二分法，是否输出处于车队中
+
+'''
+
+
+
+frameList = df.frame.unique()  # 获得每一条frame
+numFrame = len(frameList)
+sampleLen = 2*30 #帧率30,2秒的数据为60帧
+for i, frameid in enumerate(frameList):  # 枚举每一个frame，数据库中frameid从9000开始，也就是从5分钟开始
+
+    if i<sampleLen:
+        continue
+    df_frame =df[df["frame"]== frameid]
+    trackList =  df_frame.TrackID.unique()  # 获得每一条track
+    numTrack = len(trackList)
+    samples = []
+    for j, trackid in enumerate(trackList):  # 枚举每一个track
+        for k in range(frameid - samplelen,frameid) #获得当前时刻前面2秒的数据
+            df_pt =df[(df["frame"]== k) & (df["TrackID"]== j) ]
+            
+            
+            x = df_pt['xmin'].to_numpy()
+            y = df_pt['ymin'].to_numpy()
