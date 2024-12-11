@@ -144,3 +144,4 @@ stanford_campus_dataset/videos
 *.jpeg
 *.gif 
 savefig/
+stca_dataset_for_test.csv
