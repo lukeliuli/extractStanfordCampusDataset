@@ -87,7 +87,7 @@ for i, frameid in enumerate(frameList):  # 枚举每一个frame
     plt.savefig(".\\saveFig\\test_frameIndex%4d.jpg" %i)
     #plt.show()
     
-    if i>30:
+    if i>4:
         break
     
     
@@ -130,34 +130,39 @@ plt.show()
 frameList = df.frame.unique()  # 获得每一条frame
 numFrame = len(frameList)
 sampleLen = 2*30 #帧率30,2秒的数据为60帧
-sampleAll = []
+sampleAll =  {} #字典
 for i, frameid in enumerate(frameList):  # 枚举每一个frame，数据库中frameid从9000开始，也就是从5分钟开始
 
-    if i<sampleLen:
+    if i<1.5*sampleLen+1:
         continue
     df_frame =df[df["frame"]== frameid]
     trackList =  df_frame.TrackID.unique()  # 获得每一条track
     numTrack = len(trackList)
 
-    samples = []
-    for j, trackid in enumerate(trackList):  # 枚举每一个track
+    samples = {}#字典
+    print(f'i:{i},numFrame:{numFrame}')
+    for j, trackid in enumerate(trackList): # 枚举每一个track
         samplesTmp1  = []
-        for k in range(frameid - samplelen,frameid) #获得当前时刻前面2秒的数据
-            df_pt =df[(df["frame"]== k) & (df["TrackID"]== j) ]
-            df_ptl =df[(df["frame"]== k-1) & (df["TrackID"]== j) ]
+        for k in range(frameid - sampleLen,frameid):#获得当前时刻前面2秒的数据
+            df_pt = df[(df["frame"]== k) &    (df["TrackID"]== j) & (df["lost"]== 0)]
+            df_ptl =df[(df["frame"]== k-30) & (df["TrackID"]== j) & (df["lost"]== 0)] #k-30,是说与前一秒的速度比较，而不是前0.03秒数据比较
             
+            if df_ptl.empty == True or df_ptl.empty == True:
+                continue
+            x = df_pt['xmin'].iloc[0]
+            y = df_pt['ymin'].iloc[0]
+            xl = df_ptl['xmin'].iloc[0]
+            yl = df_ptl['ymin'].iloc[0]
             
-            x = df_pt['xmin'].to_numpy()
-            y = df_pt['ymin'].to_numpy()
-            xl = df_ptl['xmin'].to_numpy()
-            yl = df_ptl['ymin'].to_numpy()
             vx = x-xl
-            vy = y-xl
+            vy = y-yl
+            
             v = vx*vx+vy*vy
-            theta = math.atan(vy,vx)*180/pi
+            theta = math.atan2(vy,vx)*180/math.pi
 
             samplesTmp1.extend([x,y,v,theta])
     
+        print(samplesTmp1)
         samples[trackid] = samplesTmp1 # 存当前时刻和前一时刻（2秒），当前轨迹的据
     samplesAll[frameid] = samples[j]
 
