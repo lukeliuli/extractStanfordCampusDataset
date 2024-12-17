@@ -57,9 +57,9 @@ frameList.sort()
 print('framelist:',frameList)
 numFrame = frameList.size
 sampleLen = 2*30 #帧率30,2秒的数据为60帧
-samplesAll =  {} #字典
+#samplesAll =  {} #字典
 datall= dfall.to_numpy()
-
+samplesList =  [] #字典
 for i, frameid in enumerate(frameList):  # 枚举每一个frame，数据库中frameid从9000开始，也就是从5分钟开始
 
     if i<1.5*sampleLen+1:
@@ -77,8 +77,9 @@ for i, frameid in enumerate(frameList):  # 枚举每一个frame，数据库中fr
     if i>200000:
         break
         
-    samples = {}#字典
+    #samples = {}#字典
     for j, trackid in enumerate(trackList): # 枚举每一个track
+        
         samplesTmp1  = []
         for k in range(frameid - sampleLen,frameid):#获得当前时刻前面2秒的数据
             indexT = dataframe[:,trackidcol]== trackid
@@ -109,13 +110,26 @@ for i, frameid in enumerate(frameList):  # 枚举每一个frame，数据库中fr
             
         if not samplesTmp1:
             continue
-        samples[trackid] = samplesTmp1 # 存当前时刻和前一时刻（2秒），当前轨迹的据
-          
-    samplesAll[frameid] = samples
+        #samples[trackid] = samplesTmp1 # 存当前时刻和前一时刻（2秒），当前轨迹的据
+        samplesTmp2  = [frameid,trackid]
+        samplesTmp2.extend(samplesTmp1) 
+        samplesList.append(samplesTmp2)
+        
+        
+    #samplesAll[frameid] = samples
+  
     #每个时刻都保存一下，免得出问题
-    if frameid%1000 == 10:
-        trainSamples = pd.DataFrame(samplesAll)
-        filename = "./samples/frame:%6d_time:%s.csv" %(frameid,datetime.now())
-        trainSamples.to_csv(filename,index=False)
+    #if frameid%1000 == 1:
+    #    trainSamples = pd.DataFrame(samplesAll)
+    #    filename = "./samples/frame:%6d_time:%s.csv" %(frameid,datetime.now())
+    #    trainSamples.to_csv(filename)
+        
+    if frameid%1000 == 1 or i == numFrame-1:
+        trainSamples2 = pd.DataFrame(samplesList)
+        filename = "./samples/frame:%06d_samples%010d_time:%s.csv" %(frameid,len(samplesList),datetime.now())
+        
+        head1 = ['frameid','trackid']
+        head1.extend(list(range(len(samplesList[0])-2)))
+        trainSamples2.to_csv(filename,index=False,header = head1)
 
-print(trainSamples.head(5))
+print(trainSamples2.head(5))

@@ -36,4 +36,6 @@ ax.scatter(centroids[:, 0], centroids[:, 1], marker='x', color='black', label='C
 ax.set_xlabel('Age')
 ax.set_ylabel('Score')
 ax.legend()
+plt.savefig("./saveFigs/testCluster.jpg")
 plt.show()
+
